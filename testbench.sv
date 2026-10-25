@@ -1,4 +1,4 @@
-`timescale 1ns/1ps // Задание единицы времени и точности моделирования
+`timescale 1ns/1ps
 module TB;
     logic pclk;
     logic presetn;
@@ -12,6 +12,11 @@ module TB;
     wire pslverr;
 
     parameter p_device_offset = 32'h7000_0000;
+
+    parameter [31:0] p_student_number = 32'd2;       // номер в списке группы
+    parameter [31:0] p_date           = 32'h25102026; // дата
+    parameter [31:0] p_surname        = "Vany";      // первые 4 буквы фамилии
+    parameter [31:0] p_name           = "Dani";      // первые 4 буквы имени
 
     logic [31:0] address;
     logic [31:0] data_to_device;
@@ -85,15 +90,21 @@ module TB;
         repeat (5) @(posedge pclk);
         presetn=1'b1;
         repeat (5) @(posedge pclk);
-        address = p_device_offset+0;
-        data_to_device = 32'h12345678;
-        apb_write(address, data_to_device);
-        apb_read(address, data_from_device);
-        $display("Addr= 0x%h, write data 0x%h, read data 0x%h", address, data_to_device, data_from_device);
-        data_to_device = 32'h1;
-        apb_write(address, data_to_device);
-        apb_read(address, data_from_device);
-        $display("Addr= 0x%h, write data 0x%h, read data 0x%h", address, data_to_device, data_from_device);
+        // --- запись ---
+        apb_write(p_device_offset + 32'h0, p_student_number);
+        apb_write(p_device_offset + 32'h4, p_date);
+        apb_write(p_device_offset + 32'h8, p_surname);
+        apb_write(p_device_offset + 32'hC, p_name);
+
+        // --- чтение обратно и проверка ---
+        apb_read(p_device_offset + 32'h0, data_from_device);
+        $display("0x0: write %0d, read %0d  %s", p_student_number, data_from_device, (data_from_device == p_student_number) ? "OK" : "ERROR");
+        apb_read(p_device_offset + 32'h4, data_from_device);
+        $display("0x4: write 0x%h, read 0x%h  %s", p_date, data_from_device, (data_from_device == p_date) ? "OK" : "ERROR");
+        apb_read(p_device_offset + 32'h8, data_from_device);
+        $display("0x8: write 0x%h \"%s\", read 0x%h \"%s\"  %s", p_surname, p_surname, data_from_device, data_from_device, (data_from_device == p_surname) ? "OK" : "ERROR");
+        apb_read(p_device_offset + 32'hC, data_from_device);
+        $display("0xC: write 0x%h \"%s\", read 0x%h \"%s\"  %s", p_name, p_name, data_from_device, data_from_device, (data_from_device == p_name) ? "OK" : "ERROR");
         repeat (10) @(posedge pclk);
         $stop();
     end

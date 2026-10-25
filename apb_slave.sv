@@ -12,7 +12,10 @@ module apb_slave
     output logic [31:0] prdata // прочитанные данные
 );
 
-    logic [31:0] register_with_some_name;
+    logic [31:0] reg_num;                 // 0x0 - номер в списке группы
+    logic [31:0] reg_date;                // 0x4 - дата дд.мм.гггг (BCD)
+    logic [31:0] reg_surname;             // 0x8 - 4 буквы фамилии (ASCII)
+    logic [31:0] reg_name;                // 0xC - 4 буквы имени (ASCII)
 
     //APB FSM
     enum logic [1:0] {
@@ -27,11 +30,15 @@ module apb_slave
                 prdata <= '0;
                 pslverr <= 1'b0;
                 pready <= 1'b0;
-                register_with_some_name <= 32'h0;
+                reg_num <= 32'h0;
+                reg_date <= 32'h0;
+                reg_surname <= 32'h0;
+                reg_name <= 32'h0;
                 apb_st <= APB_SETUP;
             end
         else
         begin
+
         case(apb_st)
             APB_SETUP:
             begin: apb_setup_st
@@ -64,20 +71,22 @@ module apb_slave
                         8'h0: 
                         begin
                         // запись в регистр со смещением 0
-                        register_with_some_name <= pwdata[0] ? 32'h5555_5555 : 32'hAAAA_AAAA; // запись на регистр со смещением 0, в зависимости от значения pwdata[0] записывается либо 0x55555555, либо 0xAAAAAAAA
-                        // и/или обработка записи в регистр для выполнения каких-либо действий (может быть здесь или за пределами FSM APB)
-                        // if (pwdata[.....] == ..... )
-                        // begin
-                        // ......
-                        // end
+                        reg_num <= pwdata;
                         end
                         8'h4: 
                         begin
                         // запись в регистр со смещением 4
+                        reg_date <= pwdata;
                         end
                         8'h8: 
                         begin
                         // запись в регистр со смещением 8
+                        reg_surname <= pwdata;
+                        end
+                        8'hC: 
+                        begin
+                        // запись в регистр со смещением 0xC
+                        reg_name <= pwdata;
                         end
                         default:
                         begin
@@ -97,15 +106,22 @@ module apb_slave
                         8'h0: 
                         begin
                         // чтение из регистра со смещением 0
-                        prdata[31:0] <= register_with_some_name[31:0];
+                        prdata[31:0] <= reg_num[31:0];
                         end
                         8'h4: 
                         begin
-                        // запись из регистра со смещением 4
+                        // чтение из регистра со смещением 4
+                        prdata[31:0] <= reg_date[31:0];
                         end
                         8'h8: 
                         begin
-                        // запись из регистра со смещением 8
+                        // чтение из регистра со смещением 8
+                        prdata[31:0] <= reg_surname[31:0];
+                        end
+                        8'hC: 
+                        begin
+                        // чтение из регистра со смещением 0xC
+                        prdata[31:0] <= reg_name[31:0];
                         end
                         default:
                         begin
