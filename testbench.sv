@@ -1,4 +1,4 @@
-`timescale 1ns/1ps
+`timescale 1ns/1ps // Задание единицы времени и точности моделирования
 module TB;
     logic pclk;
     logic presetn;
