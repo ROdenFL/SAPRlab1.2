@@ -5,3 +5,8 @@ simulation/
 *.qpf
 *.qsf
 *.txt
+*.bak
+*.rpt
+transcript
+*.wlf
+work/

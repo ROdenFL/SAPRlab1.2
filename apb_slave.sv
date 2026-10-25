@@ -37,6 +37,7 @@ module apb_slave
             begin: apb_setup_st
                 // clear the prdata and error
                 prdata <= '0;
+                pslverr <= 1'b0;
                 pready <= 1'b0;
 
                 // Move to ENABLE when the psel is asserted
@@ -63,7 +64,7 @@ module apb_slave
                         8'h0: 
                         begin
                         // запись в регистр со смещением 0
-                        register_with_some_name <= pwdata;
+                        register_with_some_name <= pwdata[0] ? 32'h5555_5555 : 32'hAAAA_AAAA;
                         // и/или обработка записи в регистр для выполнения каких-либо действий (может быть здесь или за пределами FSM APB)
                         // if (pwdata[.....] == ..... )
                         // begin
@@ -122,16 +123,6 @@ module apb_slave
                 end
         endcase
 
-        // можем выполнить какие-то действия здесь
-        //if (penable==1'b0)
-        if (register_with_some_name[0] == 1'b0)
-            begin
-                register_with_some_name <= 32'hAAAA_AAAA;
-            end
-        else
-            begin
-                register_with_some_name <= 32'h5555_5555;
-            end
 
 
     end // закончился блок внутри always

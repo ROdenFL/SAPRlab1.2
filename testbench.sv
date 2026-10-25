@@ -1,3 +1,4 @@
+`timescale 1ns/1ps
 module TB;
     logic pclk;
     logic presetn;
